@@ -3,14 +3,8 @@ name: Verify Wi-Fi Driver Patches
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'patches/wifi/**'
-      - '.github/workflows/verify-wifi-patches.yml'
   pull_request:
     branches: [ main ]
-    paths:
-      - 'patches/wifi/**'
-      - '.github/workflows/verify-wifi-patches.yml'
   workflow_dispatch:
 
 jobs:
@@ -29,7 +23,6 @@ jobs:
 
       - name: Run Deep Static & Syntax Verification Suite
         run: |
-          cd patches/wifi
           python3 verify_patches.py
 
       - name: Prepare Test Kernel Tree for MT7921 Patches
@@ -51,17 +44,17 @@ jobs:
 
       - name: Run Sequential Dry-Run Applicator (Target Kernel 7)
         run: |
-          chmod +x patches/wifi/apply_patches.sh
-          ./patches/wifi/apply_patches.sh --dry-run --target-kernel 7 --kernel-dir /tmp/kernel-tree --mwifiex-dir /tmp/mwifiex-tree
+          chmod +x apply_patches.sh
+          ./apply_patches.sh --dry-run --target-kernel 7 --kernel-dir /tmp/kernel-tree --mwifiex-dir /tmp/mwifiex-tree
 
       - name: Run Sequential Dry-Run Applicator (Target Kernel 6)
         run: |
-          ./patches/wifi/apply_patches.sh --dry-run --target-kernel 6 --kernel-dir /tmp/kernel-tree --mwifiex-dir /tmp/mwifiex-tree
+          ./apply_patches.sh --dry-run --target-kernel 6 --kernel-dir /tmp/kernel-tree --mwifiex-dir /tmp/mwifiex-tree
 
       - name: Build Verification - Compile mwifiex Kernel Modules
         run: |
           git clone --depth 1 --branch lf-6.18.2_1.0.0 https://github.com/nxp-imx/mwifiex.git /tmp/mwifiex-build
-          ./patches/wifi/apply_patches.sh --target-kernel 6 --mwifiex-dir /tmp/mwifiex-build
+          ./apply_patches.sh --target-kernel 6 --mwifiex-dir /tmp/mwifiex-build
           make -C /tmp/mwifiex-build PWD=/tmp/mwifiex-build KERNELDIR=/lib/modules/$(uname -r)/build ARCH=x86 -j$(nproc)
           test -f /tmp/mwifiex-build/mlan.ko
           test -f /tmp/mwifiex-build/moal.ko
